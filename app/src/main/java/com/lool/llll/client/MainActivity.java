@@ -31,6 +31,7 @@ import android.widget.Toast;
 public class MainActivity extends ActionBarActivity implements LocationListener {
 
     LocationManager locationManager;
+    Location locations;
     String provider;
     static final int SocketServerPORT = 8080;
 
@@ -67,11 +68,12 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        Location location = locationManager.getLastKnownLocation(provider);
-        if (location != null){
-            onLocationChanged(location);
+         locations = locationManager.getLastKnownLocation(provider);
+        if (locations != null){
+            sendLocation(locations);
+            onLocationChanged(locations);
             }else {
-            Toast.makeText(this, "connection failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "location failed", Toast.LENGTH_SHORT).show();
         }
 
 
@@ -188,21 +190,17 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
             chatClientThread = new ChatClientThread(
                     textUserName, textAddress, SocketServerPORT);
+
             chatClientThread.start();
+            if (locations != null){
+                sendLocation(locations);}
         }
 
     };
 
     @Override
     public void onLocationChanged(Location location) {
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
-        if ( chatClientThread==null) {
-
-        }
-        else {
-            chatClientThread.sendMsg("lat"+lat+"l"+lng+"lng");
-        }
+      sendLocation(location);
     }
 
     @Override
@@ -220,7 +218,15 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
     }
 
+    public void sendLocation(Location location){
+        if ( chatClientThread==null) {
 
+        }
+        else {
+            chatClientThread.sendMsg("lat"+location.getLatitude()+"l"+location.getLongitude()+"lng");
+        }
+
+    }
 
     private class ChatClientThread extends Thread {
 
