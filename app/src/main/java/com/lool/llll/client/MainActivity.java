@@ -2,6 +2,7 @@ package com.lool.llll.client;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -39,6 +40,7 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
     EditText editTextUserName, editTextAddress;
     Button buttonConnect;
+    Button buttonCamera;
     TextView chatMsg, textPort;
 
     EditText editTextSay;
@@ -86,10 +88,12 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         textPort = (TextView) findViewById(R.id.port);
         textPort.setText("port: " + SocketServerPORT);
         buttonConnect = (Button) findViewById(R.id.connect);
+        buttonCamera = (Button) findViewById(R.id.buttonCamera) ;
         buttonDisconnect = (Button) findViewById(R.id.disconnect);
         chatMsg = (TextView) findViewById(R.id.chatmsg);
 
         buttonConnect.setOnClickListener(buttonConnectOnClickListener);
+        buttonCamera.setOnClickListener(buttonCameraOnClickListener);
         buttonDisconnect.setOnClickListener(buttonDisconnectOnClickListener);
 
         editTextSay = (EditText)findViewById(R.id.say);
@@ -165,6 +169,19 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
     };
 
+    OnClickListener buttonCameraOnClickListener = new OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            try {
+                Intent intent2 = new Intent(MainActivity.this, CameraActivity.class);
+                startActivity(intent2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+    };
     OnClickListener buttonConnectOnClickListener = new OnClickListener() {
 
         @Override

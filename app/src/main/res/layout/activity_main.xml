@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Char Client"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/loginpanel"
@@ -47,6 +48,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Connect..." />
+
+        <Button
+            android:layout_width="323dp"
+            android:layout_height="wrap_content"
+            android:text="Camera"
+            android:id="@+id/buttonCamera"
+            android:layout_gravity="center_horizontal" />
     </LinearLayout>
 
     <LinearLayout
