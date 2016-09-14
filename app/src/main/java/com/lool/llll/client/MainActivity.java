@@ -1,6 +1,8 @@
 package com.lool.llll.client;
 
 import android.Manifest;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,8 +23,11 @@ import java.net.UnknownHostException;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -30,6 +35,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements LocationListener {
+    Boolean cam_status = false;
+    String key_cam =" Server : cam\n";
+    FragmentManager manager ;
 
     LocationManager locationManager;
     Location locations;
@@ -54,11 +62,16 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
 
+
+        manager = getFragmentManager();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -169,19 +182,7 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
     };
 
-    OnClickListener buttonCameraOnClickListener = new OnClickListener() {
 
-        @Override
-        public void onClick(View v) {
-            try {
-                Intent intent2 = new Intent(MainActivity.this, CameraActivity.class);
-                startActivity(intent2);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    };
     OnClickListener buttonConnectOnClickListener = new OnClickListener() {
 
         @Override
@@ -276,15 +277,21 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
                 while (!goOut) {
                     if (dataInputStream.available() > 0) {
-                        msgLog += dataInputStream.readUTF();
+                        String s = dataInputStream.readUTF();
+                        //  Log.i("cam",s);
+                        if (s.equals(key_cam)) {
+                        show_camera();
+                        } else {
+                            msgLog += s;
 
-                        MainActivity.this.runOnUiThread(new Runnable() {
+                            MainActivity.this.runOnUiThread(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                chatMsg.setText(msgLog);
-                            }
-                        });
+                                @Override
+                                public void run() {
+                                    chatMsg.setText(msgLog);
+                                }
+                            });
+                        }
                     }
 
                     if(!msgToSend.equals("")){
@@ -363,6 +370,41 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
         private void disconnect(){
             goOut = true;
+        }
+    }
+
+
+    OnClickListener buttonCameraOnClickListener = new OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+
+            show_camera();
+        }
+    };
+
+    void show_camera(){
+        if(! cam_status) {
+            try {
+                CameraActivity cameraActivity = new CameraActivity();
+                FragmentTransaction transaction = manager.beginTransaction();
+                transaction.add(R.id.layout_fragment, cameraActivity, "A");
+                transaction.commit();
+                cam_status = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }else {
+
+            CameraActivity f1= (CameraActivity) manager.findFragmentByTag("A");
+            FragmentTransaction transaction=manager.beginTransaction();
+            if (f1 !=null){
+                transaction.remove(f1);
+                transaction.commit();
+                cam_status=false ;
+            }else {
+                Toast.makeText(MainActivity.this,"no fragment A here",Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

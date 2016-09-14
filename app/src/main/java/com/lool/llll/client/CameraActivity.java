@@ -1,5 +1,7 @@
 package com.lool.llll.client;
 
+import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 
 import java.net.Inet4Address;
@@ -21,15 +23,21 @@ import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 
 
-public class CameraActivity extends Activity implements SurfaceHolder.Callback {
+public class CameraActivity extends Fragment implements SurfaceHolder.Callback {
+
 
     private static final String TAG = CameraActivity.class.getSimpleName();
 
@@ -71,26 +79,29 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+         View view = inflater.inflate(R.layout.activity_camera, container, false);
+
+
         new LoadPreferencesTask().execute();
 
-        mPreviewDisplay = ((SurfaceView) findViewById(R.id.camera)).getHolder();
+        mPreviewDisplay = ((SurfaceView) view.findViewById(R.id.camera)).getHolder();
         mPreviewDisplay.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mPreviewDisplay.addCallback(this);
 
         mIpAddress = tryGetIpV4Address();
-        mIpAddressView = (TextView) findViewById(R.id.ip_address);
+        mIpAddressView = (TextView) view.findViewById(R.id.ip_address);
         updatePrefCacheAndUi();
 
         final PowerManager powerManager =
-                (PowerManager) getSystemService(POWER_SERVICE);
+                (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
         mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
                 WAKE_LOCK_TAG);
+
+        return view;
     }
     @Override
-    protected void onResume()
+    public void onResume()
     {
         super.onResume();
         mRunning = true;
@@ -105,7 +116,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     } // onResume()
 
     @Override
-    protected void onPause()
+    public void onPause()
     {
         mWakeLock.release();
         super.onPause();
@@ -157,7 +168,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
             mCameraStreamer = null;
         } // if
     } // stopCameraStreamer()
-
+/*
     @Override
     public boolean onCreateOptionsMenu(final Menu menu)
     {
@@ -177,7 +188,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         startActivity(new Intent(this, PeepersPreferenceActivity.class));
         return true;
     } // onOptionsItemSelected(MenuItem)
-
+*/
     private final class LoadPreferencesTask
             extends AsyncTask<Void, Void, SharedPreferences>
     {
@@ -189,8 +200,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         @Override
         protected SharedPreferences doInBackground(final Void... noParams)
         {
-            return PreferenceManager.getDefaultSharedPreferences(
-                    CameraActivity.this);
+            return PreferenceManager.getDefaultSharedPreferences(getActivity());
         } // doInBackground()
 
         @Override
@@ -284,7 +294,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
     private boolean hasFlashLight()
     {
-        return getPackageManager().hasSystemFeature(
+        return getActivity().getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_CAMERA_FLASH);
     } // hasFlashLight()
 
