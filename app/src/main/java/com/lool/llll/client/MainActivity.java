@@ -1,6 +1,8 @@
 package com.lool.llll.client;
 
+
 import android.Manifest;
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -12,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -29,15 +32,17 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
-public class MainActivity extends ActionBarActivity implements LocationListener {
+public class MainActivity extends Activity implements LocationListener {
     Boolean cam_status = false;
-    String key_cam =" Server : cam\n";
-    FragmentManager manager ;
+    String key_cam = " Server : cam\n";
+    FragmentManager manager;
 
     LocationManager locationManager;
     Location locations;
@@ -48,7 +53,8 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
     EditText editTextUserName, editTextAddress;
     Button buttonConnect;
-    Button buttonCamera;
+  //  Button buttonCamera;
+    ToggleButton toggleButton;
     TextView chatMsg, textPort;
 
     EditText editTextSay;
@@ -63,7 +69,7 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
 
@@ -73,17 +79,19 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
         manager = getFragmentManager();
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
         }
-         locations = locationManager.getLastKnownLocation(provider);
+        locations = locationManager.getLastKnownLocation(provider);
         if (locations != null){
             sendLocation(locations);
             onLocationChanged(locations);
@@ -101,18 +109,20 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         textPort = (TextView) findViewById(R.id.port);
         textPort.setText("port: " + SocketServerPORT);
         buttonConnect = (Button) findViewById(R.id.connect);
-        buttonCamera = (Button) findViewById(R.id.buttonCamera) ;
+      //  buttonCamera = (Button) findViewById(R.id.buttonCamera) ;
+        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
         buttonDisconnect = (Button) findViewById(R.id.disconnect);
         chatMsg = (TextView) findViewById(R.id.chatmsg);
 
         buttonConnect.setOnClickListener(buttonConnectOnClickListener);
-        buttonCamera.setOnClickListener(buttonCameraOnClickListener);
+  //      buttonCamera.setOnClickListener(buttonCameraOnClickListener);
         buttonDisconnect.setOnClickListener(buttonDisconnectOnClickListener);
 
         editTextSay = (EditText)findViewById(R.id.say);
         buttonSend = (Button)findViewById(R.id.send);
 
         buttonSend.setOnClickListener(buttonSendOnClickListener);
+        toggleButton.setOnCheckedChangeListener(toggleButtonSendOnChangeListener);
     }
 
     @Override
@@ -215,8 +225,18 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         }
 
     };
+    ToggleButton.OnCheckedChangeListener toggleButtonSendOnChangeListener = new ToggleButton.OnCheckedChangeListener(){
 
-    @Override
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if(isChecked){
+                show_camera();
+            }else {
+                hide_camera();
+            }
+        }
+    };
     public void onLocationChanged(Location location) {
       sendLocation(location);
     }
@@ -280,7 +300,9 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
                         String s = dataInputStream.readUTF();
                         //  Log.i("cam",s);
                         if (s.equals(key_cam)) {
-                        show_camera();
+                            if (! cam_status) show_camera();
+                            else hide_camera();
+
                         } else {
                             msgLog += s;
 
@@ -374,7 +396,7 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
     }
 
 
-    OnClickListener buttonCameraOnClickListener = new OnClickListener() {
+  /*  OnClickListener buttonCameraOnClickListener = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
@@ -382,30 +404,39 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
             show_camera();
         }
     };
-
+*/
     void show_camera(){
-        if(! cam_status) {
+        if(!cam_status) {
             try {
                 CameraActivity cameraActivity = new CameraActivity();
                 FragmentTransaction transaction = manager.beginTransaction();
                 transaction.add(R.id.layout_fragment, cameraActivity, "A");
                 transaction.commit();
                 cam_status = true;
+                toggleButton.setChecked(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else {
-
-            CameraActivity f1= (CameraActivity) manager.findFragmentByTag("A");
-            FragmentTransaction transaction=manager.beginTransaction();
-            if (f1 !=null){
-                transaction.remove(f1);
-                transaction.commit();
-                cam_status=false ;
-            }else {
-                Toast.makeText(MainActivity.this,"no fragment A here",Toast.LENGTH_SHORT).show();
-            }
         }
+
+    }
+    void hide_camera(){
+            if (cam_status) {
+                try {
+                CameraActivity f1 = (CameraActivity) manager.findFragmentByTag("A");
+                FragmentTransaction transaction = manager.beginTransaction();
+                if (f1 != null) {
+                    transaction.remove(f1);
+                    transaction.commit();
+                    cam_status = false;
+                    toggleButton.setChecked(false);
+                } else {
+                    Toast.makeText(this, "no fragment A here", Toast.LENGTH_SHORT).show();
+                }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
     }
 
 }
