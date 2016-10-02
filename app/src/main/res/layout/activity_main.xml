@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
   tools:context="com.lool.llll.client.MainActivity">
 
+
+
    <RelativeLayout
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
+       android:id="@+id/relat"
+       android:layout_alignParentTop="false"
+       android:layout_alignParentLeft="false"
+       android:layout_alignParentBottom="false">
 
-        >
 
 
        <RelativeLayout
@@ -46,7 +51,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:visibility="visible" >
+        android:visibility="visible"
+        android:layout_below="@+id/relat"
+        android:layout_alignRight="@+id/textView"
+        android:layout_alignEnd="@+id/textView">
 
 
         <EditText
@@ -114,5 +122,11 @@
                 android:layout_height="wrap_content" />
         </ScrollView>
     </LinearLayout>
-
-</LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:layout_alignParentRight="true"
+        android:alpha="0.6"
+        android:layout_alignParentTop="true" />
+</RelativeLayout>

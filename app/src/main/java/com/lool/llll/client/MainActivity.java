@@ -55,7 +55,7 @@ public class MainActivity extends Activity implements LocationListener {
     Button buttonConnect;
   //  Button buttonCamera;
     ToggleButton toggleButton;
-    TextView chatMsg, textPort;
+    TextView chatMsg, textPort,textView_sensor;
 
     EditText editTextSay;
     Button buttonSend;
@@ -64,6 +64,8 @@ public class MainActivity extends Activity implements LocationListener {
     String msgLog = "";
 
     ChatClientThread chatClientThread = null;
+
+    Sensors sensors;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +77,20 @@ public class MainActivity extends Activity implements LocationListener {
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
-
+        textView_sensor = (TextView) findViewById(R.id.textView);
+        sensors = new Sensors(this) {
+            @Override
+            public void setTxtView_sensor(String[] s) {
+                String a =  "az:"+s[0]+"\n" +
+                            "pitch:" +s[1]+"\n" +
+                            "roll:" +s[2] ;
+                textView_sensor.setText(a);
+                sendOrientation( "a"+s[0]+
+                                 "b" +s[1]+
+                                 "c" +s[2] );
+            }
+        };
+        sensors.run();
 
         manager = getFragmentManager();
 
@@ -123,6 +138,10 @@ public class MainActivity extends Activity implements LocationListener {
 
         buttonSend.setOnClickListener(buttonSendOnClickListener);
         toggleButton.setOnCheckedChangeListener(toggleButtonSendOnChangeListener);
+
+
+
+
     }
 
     @Override
@@ -159,8 +178,6 @@ public class MainActivity extends Activity implements LocationListener {
 
 
     }
-
-
 
 
     OnClickListener buttonDisconnectOnClickListener = new OnClickListener() {
@@ -262,6 +279,16 @@ public class MainActivity extends Activity implements LocationListener {
         }
         else {
             chatClientThread.sendMsg("lat"+location.getLatitude()+"l"+location.getLongitude()+"lng");
+        }
+
+    }
+
+    public void sendOrientation(String s){
+        if ( chatClientThread==null) {
+
+        }
+        else {
+            chatClientThread.sendMsg(s);
         }
 
     }
@@ -395,16 +422,6 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-
-  /*  OnClickListener buttonCameraOnClickListener = new OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-
-            show_camera();
-        }
-    };
-*/
     void show_camera(){
         if(!cam_status) {
             try {
